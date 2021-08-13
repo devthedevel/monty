@@ -18,7 +18,8 @@ export class RaffLStack extends cdk.Stack {
                 APP_PUBLIC_KEY: process.env.RAFFL_PUBLIC_KEY as string
             },
             retryAttempts: 0,
-            timeout: cdk.Duration.seconds(5)
+            timeout: cdk.Duration.seconds(5),
+            logRetention: 3
         });
 
         const lambdaIntegration = new apigw.LambdaIntegration(this.lambda);

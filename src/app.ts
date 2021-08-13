@@ -2,7 +2,7 @@ import * as nacl from 'tweetnacl';
 import { APIGatewayEvent } from 'aws-lambda';
 import { HttpResponse, Response } from './utils/http';
 import { InteractionRequest, InteractionRequestType } from './discord/interactions';
-import { ApplicationCommand, Ping } from './handlers';
+import { ApplicationCommand, MessageComponent, Ping } from './handlers';
 
 /**
  * Verifies if the incoming request is valid from Discord
@@ -60,6 +60,8 @@ export const handler = async (event: APIGatewayEvent): Promise<HttpResponse> => 
 
     const request: InteractionRequest = JSON.parse(event.body as string);
 
+    console.log(`Request `, JSON.stringify(request));
+
     console.log(`Request type: ${InteractionRequestType[request.type]}`)
     switch (request.type) {
         case InteractionRequestType.PING: {
@@ -69,7 +71,7 @@ export const handler = async (event: APIGatewayEvent): Promise<HttpResponse> => 
             return await ApplicationCommand(request);
         }
         case InteractionRequestType.MESSAGE_COMPONENT: {
-            return Response(200);
+            return await MessageComponent(request);
         }
         default: {
             console.log('Defaulting to 200 response');
