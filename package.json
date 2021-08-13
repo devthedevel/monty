@@ -1,15 +1,17 @@
 {
-  "name": "raff_l",
+  "name": "raffl",
   "version": "0.1.0",
   "bin": {
     "app": "infrastructure/app.js"
   },
   "scripts": {
-    "bundle-win": "copy package.json dist && cd dist && npm i --production && cd ../ && tar.exe -acf deployment.zip dist/*",
+    "clean": "rm deployment.zip && rm -r build",
+    "bundle": "cp package.json build && cd build && npm i --production --no-package-lock && rm package.json && zip -qr ../deployment.zip *",
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "deploy": "cdk deploy '*'"
   },
   "devDependencies": {
     "@aws-cdk/assert": "1.117.0",

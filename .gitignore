@@ -8,7 +8,7 @@ node_modules
 cdk.out
 
 # Files for building and bundling
-dist
+build
 deployment.zip
 
 .vscode

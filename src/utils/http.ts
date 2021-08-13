@@ -8,7 +8,7 @@ export interface HttpResponse {
     body?: string;
 }
 
-export const Response = (statusCode: number, body?: string | object, headers?: Header): HttpResponse => {
+export const Response = <T>(statusCode: number, body?: string | T, headers?: Header): HttpResponse => {
     const response: HttpResponse = {
         statusCode: statusCode
     };

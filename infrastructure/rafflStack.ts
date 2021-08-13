@@ -12,7 +12,7 @@ export class RaffLStack extends cdk.Stack {
         this.api = new apigw.RestApi(this, 'raffl-api');
         this.lambda = new lambda.Function(this, 'lambda', {
             runtime: lambda.Runtime.NODEJS_14_X,
-            handler: 'dist/index.handler',
+            handler: 'app.handler',
             code: lambda.Code.fromAsset('deployment.zip'),
             environment: {
                 APP_PUBLIC_KEY: process.env.RAFFL_PUBLIC_KEY as string

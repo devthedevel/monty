@@ -5,7 +5,7 @@
     "lib": [
       "es2018"
     ],
-    "outDir": "./dist",
+    "outDir": "./build",
     "strict": true,
     "noImplicitAny": false,
     "strictNullChecks": true,

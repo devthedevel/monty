@@ -1,7 +1,8 @@
 import * as nacl from 'tweetnacl';
 import { APIGatewayEvent } from 'aws-lambda';
-import { HttpResponse, Response } from './http';
-import { InteractionCallbackType, InteractionRequest, InteractionRequestType } from './interactions';
+import { HttpResponse, Response } from './utils/http';
+import { InteractionRequest, InteractionRequestType } from './discord/interactions';
+import { ApplicationCommand, Ping } from './handlers';
 
 /**
  * Verifies if the incoming request is valid from Discord
@@ -41,6 +42,11 @@ function verifyRequest(event: APIGatewayEvent): boolean {
     );
 }
 
+/**
+ * Handler for the RaffL app
+ * @param event 
+ * @returns 
+ */
 export const handler = async (event: APIGatewayEvent): Promise<HttpResponse> => {
     console.log('Incoming request');
 
@@ -54,19 +60,15 @@ export const handler = async (event: APIGatewayEvent): Promise<HttpResponse> => 
 
     const request: InteractionRequest = JSON.parse(event.body as string);
 
-    console.log('body ', request);
-
+    console.log(`Request type: ${InteractionRequestType[request.type]}`)
     switch (request.type) {
         case InteractionRequestType.PING: {
-            console.log('PING request received! Sending PONG')
-            return Response(200, {type: InteractionCallbackType.PONG});
+            return await Ping(request);
         }
         case InteractionRequestType.APPLICATION_COMMAND: {
-            console.log('APPLICATION COMMAND request received!');
-            return Response(200);
+            return await ApplicationCommand(request);
         }
         case InteractionRequestType.MESSAGE_COMPONENT: {
-            console.log('MESSAGE COMPONENT request received!');
             return Response(200);
         }
         default: {
