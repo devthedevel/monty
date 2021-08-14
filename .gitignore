@@ -9,6 +9,5 @@ cdk.out
 
 # Files for building and bundling
 build
-deployment.zip
 
 .vscode
