@@ -17,7 +17,6 @@ async function handleChatInput(data: ApplicationCommandData): Promise<HttpRespon
     const argString = Object.keys(args).map(argKey => `${argKey}=${args[argKey]}`).join(' ');
 
     console.log(`Slash command: /${command} ${argString}`)
-    console.log(`options `, JSON.stringify(data.options));
     return Response<InteractionResponse>(200, {
         type: InteractionCallbackType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
