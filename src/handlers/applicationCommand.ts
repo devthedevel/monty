@@ -1,3 +1,4 @@
+import { CreateCommand, CreateCommandArgs } from "../commands/create";
 import { ApplicationCommandData, ApplicationCommandType } from "../discord/applicationCommand";
 import { InteractionCallbackType, InteractionData, InteractionRequest, InteractionResponse } from "../discord/interactions";
 import { HttpResponse, Response } from '../utils/http';
@@ -17,31 +18,21 @@ async function handleChatInput(data: ApplicationCommandData): Promise<HttpRespon
     const argString = Object.keys(args).map(argKey => `${argKey}=${args[argKey]}`).join(' ');
 
     console.log(`Slash command: /${command} ${argString}`)
-    return Response<InteractionResponse>(200, {
-        type: InteractionCallbackType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: {
-            content: '@here',
-            embeds: [
-                {
-                    color: 0xd733ff,
-                    title: 'New Raffle',
-                    description: `Hey folks! Theres a new raffle created! To join right click this message > apps > join`,
-                    fields: [
-                        {
-                            name: 'Name',
-                            value: args['name'],
-                            inline: true
-                        },
-                        {
-                            name: 'Ticket Price',
-                            value: args['ticket_price'],
-                            inline: true
-                        }
-                    ]
-                }
-            ]
+
+    switch(command) {
+        case 'create': {
+            return await CreateCommand(args as CreateCommandArgs);
         }
-    });
+        default: {
+            return Response<InteractionResponse>(200, {
+                type: InteractionCallbackType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: `Whoops! Looks like the command '${command}' doesn't exist here!`,
+                    flags: 1 << 6
+                }
+            })
+        }
+    }
 }
 
 /**
