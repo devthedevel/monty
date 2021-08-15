@@ -1,17 +1,18 @@
-import { CreateCommand, CreateCommandArgs } from "../commands/create";
-import { ApplicationCommandData, ApplicationCommandType } from "../discord/applicationCommand";
+import { CreateCommandHandler, CreateCommandArgs, CreateCommand } from "../commands/create";
+import { DeleteCommandHandler, DeleteCommandArgs, DeleteCommand } from "../commands/delete";
+import { ApplicationCommandType } from "../discord/applicationCommand";
 import { InteractionCallbackType, InteractionData, InteractionRequest, InteractionResponse } from "../discord/interactions";
 import { HttpResponse, Response } from '../utils/http';
 
 /**
  * Handles a chat input type interaction
- * @param data 
+ * @param request 
  * @returns 
  */
-async function handleChatInput(data: ApplicationCommandData): Promise<HttpResponse> {
-    const command = data.options?.[0].name;
+async function handleChatInput(request: InteractionRequest): Promise<HttpResponse> {
+    const command = request.data?.options?.[0].name;
     const args = { };
-    data.options?.[0].options?.forEach(option => {
+    request.data?.options?.[0].options?.forEach(option => {
         args[option.name] = option.value;
     });
 
@@ -20,8 +21,11 @@ async function handleChatInput(data: ApplicationCommandData): Promise<HttpRespon
     console.log(`Slash command: /${command} ${argString}`)
 
     switch(command) {
-        case 'create': {
-            return await CreateCommand(args as CreateCommandArgs);
+        case CreateCommand: {
+            return await CreateCommandHandler(request, args as CreateCommandArgs);
+        }
+        case DeleteCommand: {
+            return await DeleteCommandHandler(request, args as DeleteCommandArgs);
         }
         default: {
             return Response<InteractionResponse>(200, {
@@ -108,7 +112,7 @@ export const ApplicationCommand = async (request: InteractionRequest): Promise<H
     console.log(`Application Command Type: ${ApplicationCommandType[data.type]}`);
     switch(data.type) {
         case ApplicationCommandType.CHAT_INPUT: {
-            return await handleChatInput(data);
+            return await handleChatInput(request);
         }
         case ApplicationCommandType.USER: {
             return await handleUser(data);
