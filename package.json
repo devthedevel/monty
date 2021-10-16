@@ -34,6 +34,7 @@
   "dependencies": {
     "@aws-cdk/core": "1.117.0",
     "aws-sdk": "^2.965.0",
+    "axios": "^0.23.0",
     "source-map-support": "^0.5.16",
     "tweetnacl": "^1.0.3"
   }

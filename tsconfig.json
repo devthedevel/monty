@@ -6,6 +6,7 @@
       "es2018"
     ],
     "outDir": "./build/src",
+    "skipLibCheck": true,
     "strict": true,
     "noImplicitAny": false,
     "strictNullChecks": true,
@@ -21,7 +22,7 @@
     "strictPropertyInitialization": false,
     "typeRoots": [
       "./node_modules/@types"
-    ]
+    ],
   },
   "exclude": [
     "node_modules",

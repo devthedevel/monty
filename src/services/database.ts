@@ -1,5 +1,4 @@
 import { DynamoDB } from "aws-sdk";
-import { Response } from "../utils/http";
 
 interface RaffleCreateParams {
     GuildId: string;

@@ -1,11 +1,18 @@
 import { Embed, GuildMember, Message, Snowflake, User } from '.';
 import { ApplicationCommandType, ApplicationCommandDataOption } from './applicationCommand';
 
+/**
+ * https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object-interaction-type
+ */
 export enum InteractionRequestType {
     PING = 1,
     APPLICATION_COMMAND = 2,
     MESSAGE_COMPONENT = 3
 }
+
+/**
+ * https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object-interaction-structure
+ */
 export interface InteractionRequest {
     id: Snowflake;
     application_id: Snowflake;
@@ -20,6 +27,9 @@ export interface InteractionRequest {
     message?: Message;
 }
 
+/**
+ * https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object-interaction-data-structure
+ */
 export interface InteractionData {
     id: Snowflake;
     name: string;

@@ -1,8 +1,8 @@
 import * as nacl from 'tweetnacl';
 import { APIGatewayEvent } from 'aws-lambda';
-import { HttpResponse, Response } from './utils/http';
-import { InteractionRequest, InteractionRequestType } from './discord/interactions';
-import { ApplicationCommand, MessageComponent, Ping } from './handlers';
+import { HttpResponse, Response } from '../utils/http';
+import { InteractionCallbackType, InteractionRequest, InteractionRequestType, InteractionResponse } from '../types/discord/interactions';
+import { ApplicationCommand, MessageComponent, Ping } from '../handlers/interactions';
 
 /**
  * Verifies if the incoming request is valid from Discord
@@ -42,8 +42,9 @@ function verifyRequest(event: APIGatewayEvent): boolean {
     );
 }
 
+
 /**
- * Handler for the RaffL app
+ * Handler for the Monty app
  * @param event 
  * @returns 
  */
@@ -59,23 +60,26 @@ export const handler = async (event: APIGatewayEvent): Promise<HttpResponse> => 
     console.log('Request verified!');
 
     const request: InteractionRequest = JSON.parse(event.body as string);
+    console.log(`Request type: ${InteractionRequestType[request.type]}`);
 
-    console.log(`Request `, JSON.stringify(request));
-
-    console.log(`Request type: ${InteractionRequestType[request.type]}`)
-    switch (request.type) {
+    switch(request.type) {
         case InteractionRequestType.PING: {
-            return await Ping(request);
+            return Ping();
         }
         case InteractionRequestType.APPLICATION_COMMAND: {
-            return await ApplicationCommand(request);
+            return ApplicationCommand(request);
         }
         case InteractionRequestType.MESSAGE_COMPONENT: {
-            return await MessageComponent(request);
+            return MessageComponent(request);
         }
         default: {
-            console.log('Defaulting to 200 response');
-            return Response(200);
+            return Response<InteractionResponse>(200, {
+                type: InteractionCallbackType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: 'Default action. You should never be able to get here',
+                    flags: 1 << 6
+                }
+            });
         }
     }
 }

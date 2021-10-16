@@ -1,8 +1,9 @@
-import { CreateCommandHandler, CreateCommandArgs, CreateCommand } from "../commands/create";
-import { DeleteCommandHandler, DeleteCommandArgs, DeleteCommand } from "../commands/delete";
-import { ApplicationCommandType } from "../discord/applicationCommand";
-import { InteractionCallbackType, InteractionData, InteractionRequest, InteractionResponse } from "../discord/interactions";
-import { HttpResponse, Response } from '../utils/http';
+import { ApplicationCommandType } from "../../types/discord/applicationCommand";
+import { InteractionCallbackType, InteractionData, InteractionRequest, InteractionResponse } from "../../types/discord/interactions";
+import { HttpResponse, Response } from '../../utils/http';
+
+import * as lambda from '../../services/lambda';
+import { Action, ActionData, ActionType } from "../../types/actions";
 
 /**
  * Handles a chat input type interaction
@@ -11,7 +12,7 @@ import { HttpResponse, Response } from '../utils/http';
  */
 async function handleChatInput(request: InteractionRequest): Promise<HttpResponse> {
     const command = request.data?.options?.[0].name;
-    const args = { };
+    const args: ActionData = { };
     request.data?.options?.[0].options?.forEach(option => {
         args[option.name] = option.value;
     });
@@ -20,23 +21,28 @@ async function handleChatInput(request: InteractionRequest): Promise<HttpRespons
 
     console.log(`Slash command: /${command} ${argString}`)
 
-    switch(command) {
-        case CreateCommand: {
-            return await CreateCommandHandler(request, args as CreateCommandArgs);
-        }
-        case DeleteCommand: {
-            return await DeleteCommandHandler(request, args as DeleteCommandArgs);
-        }
-        default: {
-            return Response<InteractionResponse>(200, {
-                type: InteractionCallbackType.CHANNEL_MESSAGE_WITH_SOURCE,
-                data: {
-                    content: `Whoops! Looks like the command '${command}' doesn't exist here!`,
-                    flags: 1 << 6
-                }
-            })
-        }
+    const commandActionType = {
+        'create': ActionType.COMMAND_CREATE,
+        'delete': ActionType.COMMAND_DELETE
     }
+
+    const action: Action = {
+        id: request.id,
+        type: commandActionType[command as string] ?? ActionType.NULL,
+        context: {
+            applicationId: request.application_id,
+            token: request.token,
+            guildId: request.guild_id!
+        },
+        data: args
+    }
+
+    console.log(`Invoking worker lambda with id: ${request.id}`)
+
+    await lambda.invokeWorker(action);
+    return Response<InteractionResponse>(200, {
+        type: InteractionCallbackType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
+    });
 }
 
 /**

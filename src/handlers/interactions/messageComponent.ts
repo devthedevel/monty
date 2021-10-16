@@ -1,6 +1,6 @@
-import { InteractionRequest, InteractionResponse, InteractionCallbackType } from "../discord/interactions";
-import { MessageComponentData } from "../discord/messageComponent";
-import { HttpResponse, Response } from "../utils/http";
+import { InteractionRequest, InteractionResponse, InteractionCallbackType } from "../../types/discord/interactions";
+import { MessageComponentData } from "../../types/discord/messageComponent";
+import { HttpResponse, Response } from "../../utils/http";
 
 async function handleRaffleVerificationMessage(request: InteractionRequest) {
     const data = request.data as MessageComponentData;
