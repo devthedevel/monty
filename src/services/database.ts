@@ -4,6 +4,7 @@ interface RaffleCreateParams {
     GuildId: string;
     Id: string;
     TicketPrice: number;
+    Prize?: string;
 }
 
 interface RaffleDeleteParams {

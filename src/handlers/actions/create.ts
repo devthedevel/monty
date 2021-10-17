@@ -3,9 +3,11 @@ import * as webhooks from '../../services/webhook';
 import { Response } from "../../utils/http";
 import { randomUuid } from "../../utils/random";
 import { ActionData, ActionHandler } from "../../types/actions";
+import { InteractionCallbackData } from '../../types/discord/interactions';
 
 export interface CreateRaffleActionData extends ActionData {
     ticket_price: number;
+    prize?: string;
 }
 
 export const CreateRaffleActionHandler: ActionHandler<CreateRaffleActionData> = async (action) => {
@@ -19,32 +21,12 @@ export const CreateRaffleActionHandler: ActionHandler<CreateRaffleActionData> = 
         await database.Raffle.create({
             GuildId: action.context.guildId,
             Id: id,
-            TicketPrice: action.data.ticket_price
+            TicketPrice: action.data.ticket_price,
+            Prize: action.data.prize,
         })
 
         console.log('Updating initial response');
-        await webhooks.editInitialResponse(applicationId, token, {
-            content: '@here deferred',
-            embeds: [
-                {
-                    color: 0xd733ff,
-                    title: 'New Raffle',
-                    description: `Hey folks! Theres a new raffle created! To join right click this message > apps > join`,
-                    fields: [
-                        {
-                            name: 'ID',
-                            value: id,
-                            inline: true
-                        },
-                        {
-                            name: 'Ticket Price',
-                            value: String(action.data.ticket_price),
-                            inline: true
-                        }
-                    ]
-                }
-            ]
-        });
+        await webhooks.editInitialResponse(applicationId, token, buildResponseMessage(id, action.data));
 
         return Response(200);
     } catch (error) {
@@ -55,5 +37,37 @@ export const CreateRaffleActionHandler: ActionHandler<CreateRaffleActionData> = 
         })
 
         return Response(500);
+    }
+}
+
+function buildResponseMessage(id: string, data: CreateRaffleActionData): InteractionCallbackData {
+    const fields = [
+        {
+            name: 'ID',
+            value: id,
+            inline: true
+        },
+        {
+            name: 'Ticket Price',
+            value: String(data.ticket_price),
+            inline: true
+        },
+        {
+            name: 'Prize',
+            value: data.prize ?? '50% of ticket sales',
+            inline: true
+        }
+    ];
+    
+    return {
+        content: '@here deferred',
+        embeds: [
+            {
+                color: 0xd733ff,
+                title: 'New Raffle',
+                description: `Hey folks! Theres a new raffle created! To join right click this message > apps > join`,
+                fields: fields
+            }
+        ]
     }
 }

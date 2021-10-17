@@ -14,6 +14,9 @@ export class MontyStack extends cdk.Stack {
     constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
+        // Flag to determine if lambdas should log debug messages
+        const debug = true;
+
         // Dynamo tables
         this.tableRaffles = new dynamo.Table(this, 'TableRaffles', {
             partitionKey: {
@@ -42,6 +45,9 @@ export class MontyStack extends cdk.Stack {
             runtime: lambda.Runtime.NODEJS_14_X,
             handler: 'lambdas/worker.handler',
             code: lambda.Code.fromAsset('build/deployment.zip'),
+            environment: {
+                DEBUG: debug.toString()
+            },
             retryAttempts: 0,
             timeout: cdk.Duration.seconds(5),
             logRetention: 3,
@@ -54,7 +60,8 @@ export class MontyStack extends cdk.Stack {
             code: lambda.Code.fromAsset('build/deployment.zip'),
             environment: {
                 APP_PUBLIC_KEY: process.env.MONTY_PUBLIC_KEY as string,
-                WORKER_LAMBDA_ARN: this.workerLambda.functionArn as string
+                WORKER_LAMBDA_ARN: this.workerLambda.functionArn as string,
+                DEBUG: debug.toString()
             },
             retryAttempts: 0,
             timeout: cdk.Duration.seconds(5),

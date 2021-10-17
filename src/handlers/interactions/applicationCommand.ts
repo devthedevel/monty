@@ -1,7 +1,7 @@
 import { ApplicationCommandType } from "../../types/discord/applicationCommand";
 import { InteractionCallbackType, InteractionData, InteractionRequest, InteractionResponse } from "../../types/discord/interactions";
 import { HttpResponse, Response } from '../../utils/http';
-
+import DEBUG from '../../utils/debug';
 import * as lambda from '../../services/lambda';
 import { Action, ActionData, ActionType } from "../../types/actions";
 
@@ -11,6 +11,10 @@ import { Action, ActionData, ActionType } from "../../types/actions";
  * @returns 
  */
 async function handleChatInput(request: InteractionRequest): Promise<HttpResponse> {
+    if (DEBUG) {
+        console.log(`Chat request data: ${request.data}`);
+    }
+
     const command = request.data?.options?.[0].name;
     const args: ActionData = { };
     request.data?.options?.[0].options?.forEach(option => {
