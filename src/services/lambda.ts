@@ -1,5 +1,5 @@
 import { Lambda } from 'aws-sdk';
-import { Action } from '../types/actions';
+import { Action, ActionData } from '../types/actions';
 
 const lambda = new Lambda();
 
@@ -14,7 +14,7 @@ if (!WORKER_LAMBDA_ARN) {
  * @param event
  * @returns 
  */
- export async function invokeWorker(action: Action): Promise<Lambda.InvokeAsyncResponse> {
+ export async function invokeWorker<T = ActionData>(action: Action<T>): Promise<Lambda.InvokeAsyncResponse> {
     return lambda.invokeAsync({
         FunctionName: WORKER_LAMBDA_ARN,
         InvokeArgs: JSON.stringify(action)

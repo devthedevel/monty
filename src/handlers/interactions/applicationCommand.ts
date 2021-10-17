@@ -4,6 +4,7 @@ import { HttpResponse, Response } from '../../utils/http';
 import DEBUG from '../../utils/debug';
 import * as lambda from '../../services/lambda';
 import { Action, ActionData, ActionType } from "../../types/actions";
+import { EmbedField } from "../../types/discord";
 
 /**
  * Handles a chat input type interaction
@@ -99,13 +100,41 @@ async function handleUser(data: InteractionData): Promise<HttpResponse> {
  * @returns 
  */
 async function handleMessage(data: InteractionData): Promise<HttpResponse> {
-    console.log('data ', JSON.stringify(data));
+    if (DEBUG) {
+        console.log('data ', JSON.stringify(data));
+    }
+
+    const messageId = Object.keys(data.resolved?.messages!)[0];
+    const fields = data.resolved?.messages![messageId].embeds[0].fields as EmbedField[];
+    const ticketPrice = parseFloat(fields.find(field => field.name === 'Ticket Price')?.value ?? '-1');
+    const raffleId = fields.find(field => field.name === 'ID')?.value;
+
+    const options = new Array(25).fill(null).map((_, index) => {
+        return {
+            label: index + 1,
+            value: index + 1,
+            description: ticketPrice === -1 ? `Total gold owed: ${(index + 1) * ticketPrice}` : undefined
+        }
+    });
 
     return Response<InteractionResponse>(200, {
         type: InteractionCallbackType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
-            content: `You're all signed up! Make sure you send your gold!`,
-            flags: 1 << 6
+            content: `How many tickets do you want to buy?`,
+            flags: 1 << 6,
+            components: [
+                {
+                    type: 1,
+                    components: [
+                        {
+                            type: 3,
+                            custom_id: `raffle_buy_tickets_message|${raffleId}`,
+                            placeholder: 'Choose how many tickets you want to buy',
+                            options: options
+                        }
+                    ]
+                }
+            ]
         }
     });
 }

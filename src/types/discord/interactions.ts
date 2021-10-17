@@ -1,4 +1,4 @@
-import { Embed, GuildMember, Message, Snowflake, User } from '.';
+import { Embed, GuildMember, Message, ResolvedData, Snowflake, User } from '.';
 import { ApplicationCommandType, ApplicationCommandDataOption } from './applicationCommand';
 
 /**
@@ -34,7 +34,7 @@ export interface InteractionData {
     id: Snowflake;
     name: string;
     type: ApplicationCommandType;
-    resolved?: { };
+    resolved?: ResolvedData;
     options?: ApplicationCommandDataOption[];
     custom_id?: string;
     component_type?: number;

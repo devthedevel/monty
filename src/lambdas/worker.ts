@@ -2,6 +2,8 @@ import * as webhooks from '../services/webhook';
 import { HttpResponse, Response } from "../utils/http";
 import { Action, ActionType } from "../types/actions";
 import { 
+    BuyTicketsActionData,
+    BuyTicketsActionHandler,
     CreateRaffleActionData, 
     CreateRaffleActionHandler,
     DeleteRaffleActionData,
@@ -23,6 +25,9 @@ export const handler = async (action: Action): Promise<HttpResponse> => {
         }
         case ActionType.COMMAND_DELETE: {
             return await DeleteRaffleActionHandler(action as Action<DeleteRaffleActionData>);
+        }
+        case ActionType.MESSAGE_BUY_TICKETS: {
+            return await BuyTicketsActionHandler(action as Action<BuyTicketsActionData>);
         }
         default: {
             await webhooks.editInitialResponse(action.context.applicationId, action.context.token, {

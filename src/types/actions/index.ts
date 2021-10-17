@@ -11,7 +11,8 @@ export interface Action<T = ActionData> {
 export enum ActionType {
     NULL,
     COMMAND_CREATE,
-    COMMAND_DELETE
+    COMMAND_DELETE,
+    MESSAGE_BUY_TICKETS
 }
 
 export interface ActionContext {
