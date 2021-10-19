@@ -13,16 +13,17 @@ export const BuyTicketsActionHandler: ActionHandler<BuyTicketsActionData> = asyn
     const { applicationId, token } = action.context;
     
     try {
-        await database.Raffle.addTickets({
+        const totalTickets = await database.Raffle.addTickets({
             GuildId: action.context.guildId,
             Id: action.data.raffleId,
             UserId: action.data.userId,
             Tickets: action.data.tickets
         });
 
-        console.log('Updating initial response');
-        await webhooks.editInitialResponse(applicationId, token, {
-            content: `You bought ${action.data.tickets} tickets`
+        console.log('Creating follow up message');
+        await webhooks.createFollowupMessage(applicationId, token, {
+            content: `You bought ${action.data.tickets} tickets, for a total of ${totalTickets}`,
+            flags: 1 << 6
         });
 
         return Response(200);

@@ -60,7 +60,7 @@ function buildResponseMessage(id: string, data: CreateRaffleActionData): Interac
     ];
     
     return {
-        content: '@here deferred',
+        content: '@here',
         embeds: [
             {
                 color: 0xd733ff,

@@ -45,23 +45,24 @@ export class Raffle {
         await db.delete(params).promise();
     }
 
-    static async addTickets(params: RaffleAddTicketsParams): Promise<void> {
+    static async addTickets(params: RaffleAddTicketsParams): Promise<any> {
         const _params: DocumentClient.UpdateItemInput = {
             TableName: Raffle.TableName,
             Key: {
                 GuildId: params.GuildId,
                 Id: params.Id
             },
-            UpdateExpression: 'set #t.#u = :v',
+            UpdateExpression: 'set #t.#u = #t.#u + :v',
             ExpressionAttributeNames: {
                 '#t': 'Tickets',
                 '#u': params.UserId
             },
             ExpressionAttributeValues: {
                 ':v': params.Tickets
-            }
+            },
+            ReturnValues: "UPDATED_NEW"
         }
 
-        await db.update(_params).promise();
+        return (await db.update(_params).promise()).Attributes!.Tickets[params.UserId];
     }
 }
