@@ -74,7 +74,8 @@ export class MontyStack extends cdk.Stack {
             actions: [
                 'dynamodb:PutItem',
                 'dynamodb:DeleteItem',
-                'dynamodb:UpdateItem'
+                'dynamodb:UpdateItem',
+                'dynamodb:Query'
             ],
             resources: [
                 this.tableRaffles.tableArn

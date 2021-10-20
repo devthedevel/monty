@@ -3,26 +3,26 @@ import * as database from '../../services/database';
 import * as webhooks from '../../services/webhook';
 import { Response } from "../../utils/http";
 
-export interface BuyTicketsActionData extends ActionData {
-    raffleId: string;
-    userId: string;
+export interface AddTicketsActionData extends ActionData {
+    raffle_id: string;
+    user: string;
     tickets: number;
 }
 
-export const BuyTicketsActionHandler: ActionHandler<BuyTicketsActionData> = async (action) => {
+export const AddTicketsActionHandler: ActionHandler<AddTicketsActionData> = async (action) => {
     const { applicationId, token } = action.context;
     
     try {
         const totalTickets = await database.Raffle.addTickets({
             GuildId: action.context.guildId,
-            Id: action.data.raffleId,
-            UserId: action.data.userId,
+            Id: action.data.raffle_id.toUpperCase(),
+            UserId: action.data.user,
             Tickets: action.data.tickets
         });
 
         console.log('Creating follow up message');
         await webhooks.createFollowupMessage(applicationId, token, {
-            content: `You bought ${action.data.tickets} tickets, for a total of ${totalTickets}`,
+            content: `You added ${action.data.tickets} tickets to <@${action.data.user}> for a total of ${totalTickets} tickets`,
             flags: 1 << 6
         });
 

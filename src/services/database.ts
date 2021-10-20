@@ -1,4 +1,4 @@
-import { DynamoDB } from "aws-sdk";
+import { AWSError, DynamoDB } from "aws-sdk";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 
 interface RaffleTableKey {
@@ -12,7 +12,7 @@ interface RaffleCreateItem {
 }
 type RaffleCreateParams = RaffleTableKey & RaffleCreateItem;
 
-
+type RaffleItem = RaffleCreateParams;
 interface RaffleAddTicketsItem {
     UserId: string;
     Tickets: number;
@@ -45,14 +45,13 @@ export class Raffle {
         await db.delete(params).promise();
     }
 
-    static async addTickets(params: RaffleAddTicketsParams): Promise<any> {
+    static async addTickets(params: RaffleAddTicketsParams): Promise<number> {
         const _params: DocumentClient.UpdateItemInput = {
             TableName: Raffle.TableName,
             Key: {
                 GuildId: params.GuildId,
                 Id: params.Id
             },
-            UpdateExpression: 'set #t.#u = #t.#u + :v',
             ExpressionAttributeNames: {
                 '#t': 'Tickets',
                 '#u': params.UserId
@@ -63,6 +62,36 @@ export class Raffle {
             ReturnValues: "UPDATED_NEW"
         }
 
-        return (await db.update(_params).promise()).Attributes!.Tickets[params.UserId];
+        try {
+            return (await db.update({
+                ..._params,
+                UpdateExpression: 'set #t.#u = #t.#u + :v',
+                ConditionExpression: 'attribute_exists(#t.#u)'
+            }).promise()).Attributes!.Tickets[params.UserId];
+        } catch (error) {
+            if ((error as AWSError).code === 'ConditionalCheckFailedException') {
+                return (await db.update({
+                    ..._params,
+                    UpdateExpression: 'set #t.#u = :v'
+                }).promise()).Attributes!.Tickets[params.UserId];
+            }
+
+            throw new Error('Failed to write to database');
+        }
+    }
+
+    static async getRaffles(guildId: RaffleTableKey['GuildId']): Promise<RaffleItem[]> {
+        const params: DocumentClient.QueryInput = {
+            TableName: Raffle.TableName,
+            KeyConditionExpression: '#pk = :gid',
+            ExpressionAttributeNames: {
+                '#pk': 'GuildId'
+            },
+            ExpressionAttributeValues: {
+                ':gid': guildId
+            }
+        }
+
+        return (await db.query(params).promise()).Items as RaffleItem[];
     }
 }

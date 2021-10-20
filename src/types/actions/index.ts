@@ -12,7 +12,7 @@ export enum ActionType {
     NULL,
     COMMAND_CREATE,
     COMMAND_DELETE,
-    MESSAGE_BUY_TICKETS
+    COMMAND_ADD_TICKETS
 }
 
 export interface ActionContext {

@@ -65,7 +65,7 @@ function buildResponseMessage(id: string, data: CreateRaffleActionData): Interac
             {
                 color: 0xd733ff,
                 title: 'New Raffle',
-                description: `Hey folks! Theres a new raffle created! To join right click this message > apps > Buy Tickets`,
+                description: `Hey folks! Theres a new raffle created! Ask a consul on how to buy tickets!`,
                 fields: fields
             }
         ]

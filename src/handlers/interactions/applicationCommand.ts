@@ -4,7 +4,6 @@ import { HttpResponse, Response } from '../../utils/http';
 import DEBUG from '../../utils/debug';
 import * as lambda from '../../services/lambda';
 import { Action, ActionData, ActionType } from "../../types/actions";
-import { EmbedField } from "../../types/discord";
 
 /**
  * Handles a chat input type interaction
@@ -28,7 +27,8 @@ async function handleChatInput(request: InteractionRequest): Promise<HttpRespons
 
     const commandActionType = {
         'create': ActionType.COMMAND_CREATE,
-        'delete': ActionType.COMMAND_DELETE
+        'delete': ActionType.COMMAND_DELETE,
+        'add_tickets': ActionType.COMMAND_ADD_TICKETS
     }
 
     const action: Action = {
@@ -57,37 +57,13 @@ async function handleChatInput(request: InteractionRequest): Promise<HttpRespons
  * @param data 
  * @returns 
  */
-async function handleUser(data: InteractionData): Promise<HttpResponse> {
-    console.log('data ', JSON.stringify(data));
-
-    const options = new Array(25).fill(null).map((option, index) => {
-        return {
-            label: index,
-            value: index,
-            description: `The number ${index}`
-        }
-    });
-
+async function handleUser(_request: InteractionRequest): Promise<HttpResponse> {
+    console.log('Unsupported interaction');
     return Response<InteractionResponse>(200, {
         type: InteractionCallbackType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
-            content: 'This will eventually verify a user ',
-            flags: 1 << 6,
-            components: [
-                {
-                    type: 1,
-                    components: [
-                        {
-                            type: 3,
-                            custom_id: 'raffle_verification_message',
-                            placeholder: 'Choose which raffles to verify this user for',
-                            min_values: 1,
-                            max_values: 25,
-                            options: options
-                        }
-                    ]
-                }
-            ]
+            content: 'This is currently unsupported',
+            flags: 1 << 6
         }
     });
 }
@@ -99,42 +75,13 @@ async function handleUser(data: InteractionData): Promise<HttpResponse> {
  * @param data 
  * @returns 
  */
-async function handleMessage(data: InteractionData): Promise<HttpResponse> {
-    if (DEBUG) {
-        console.log('data ', JSON.stringify(data));
-    }
-
-    const messageId = Object.keys(data.resolved?.messages!)[0];
-    const fields = data.resolved?.messages![messageId].embeds[0].fields as EmbedField[];
-    const ticketPrice = parseFloat(fields.find(field => field.name === 'Ticket Price')?.value ?? '-1');
-    const raffleId = fields.find(field => field.name === 'ID')?.value;
-
-    const options = new Array(25).fill(null).map((_, index) => {
-        return {
-            label: index + 1,
-            value: index + 1,
-            description: ticketPrice === -1 ? `Total gold owed: ${(index + 1) * ticketPrice}` : undefined
-        }
-    });
-
+async function handleMessage(_request: InteractionRequest): Promise<HttpResponse> {
+    console.log('Unsupported interaction');
     return Response<InteractionResponse>(200, {
         type: InteractionCallbackType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
-            content: `How many tickets do you want to buy?`,
-            flags: 1 << 6,
-            components: [
-                {
-                    type: 1,
-                    components: [
-                        {
-                            type: 3,
-                            custom_id: `raffle_buy_tickets_message|${raffleId}`,
-                            placeholder: 'Choose how many tickets you want to buy',
-                            options: options
-                        }
-                    ]
-                }
-            ]
+            content: 'This is currently unsupported',
+            flags: 1 << 6
         }
     });
 }
@@ -154,10 +101,10 @@ export const ApplicationCommand = async (request: InteractionRequest): Promise<H
             return await handleChatInput(request);
         }
         case ApplicationCommandType.USER: {
-            return await handleUser(data);
+            return await handleUser(request);
         }
         case ApplicationCommandType.MESSAGE: {
-            return await handleMessage(data);
+            return await handleMessage(request);
         }
         default: {
             console.log('Defaulting');

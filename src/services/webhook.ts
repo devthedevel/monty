@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { InteractionCallbackData } from '../types/discord/interactions';
 
-const API_VERSION = 'v8';
+const API_VERSION = 'v9';
 
 const instance = axios.create({
     baseURL: `https://discord.com/api/${API_VERSION}`
