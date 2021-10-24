@@ -1,5 +1,6 @@
 import { AWSError, DynamoDB } from "aws-sdk";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { Response } from "../utils/http";
 
 interface RaffleTableKey {
     GuildId: string;
@@ -12,12 +13,17 @@ interface RaffleCreateItem {
 }
 type RaffleCreateParams = RaffleTableKey & RaffleCreateItem;
 
-type RaffleItem = RaffleCreateParams;
+type RaffleItem = RaffleCreateParams & Omit<RaffleAddTicketsParams, 'UserId'>;
 interface RaffleAddTicketsItem {
     UserId: string;
     Tickets: number;
 }
 type RaffleAddTicketsParams = RaffleTableKey & RaffleAddTicketsItem;
+
+interface RaffleUpdateWinnerItem {
+    Winner: string;
+}
+type RaffleUpdateWinnerParams = RaffleTableKey & RaffleUpdateWinnerItem;
 
 const db = new DynamoDB.DocumentClient();
 
@@ -93,5 +99,33 @@ export class Raffle {
         }
 
         return (await db.query(params).promise()).Items as RaffleItem[];
+    }
+
+    static async get(params: RaffleTableKey): Promise<RaffleItem | undefined> {
+        const _params: DocumentClient.GetItemInput = {
+            TableName: Raffle.TableName,
+            Key: params
+        }
+
+        return (await db.get(_params).promise()).Item as RaffleItem | undefined;
+    }
+
+    static async updateWinner(params: RaffleUpdateWinnerParams): Promise<any> {
+        const _params: DocumentClient.UpdateItemInput = {
+            TableName: Raffle.TableName,
+            Key: {
+                GuildId: params.GuildId,
+                Id: params.Id
+            },
+            UpdateExpression: 'set #w = :id',
+            ExpressionAttributeNames: {
+                '#w': 'Winner'
+            },
+            ExpressionAttributeValues: {
+                ':id': params.Winner
+            }
+        }
+
+        return db.update(_params).promise();
     }
 }

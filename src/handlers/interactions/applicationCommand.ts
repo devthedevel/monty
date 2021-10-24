@@ -28,7 +28,8 @@ async function handleChatInput(request: InteractionRequest): Promise<HttpRespons
     const commandActionType = {
         'create': ActionType.COMMAND_CREATE,
         'delete': ActionType.COMMAND_DELETE,
-        'add_tickets': ActionType.COMMAND_ADD_TICKETS
+        'add_tickets': ActionType.COMMAND_ADD_TICKETS,
+        'start': ActionType.COMMAND_START
     }
 
     const action: Action = {

@@ -12,7 +12,8 @@ export enum ActionType {
     NULL,
     COMMAND_CREATE,
     COMMAND_DELETE,
-    COMMAND_ADD_TICKETS
+    COMMAND_ADD_TICKETS,
+    COMMAND_START
 }
 
 export interface ActionContext {

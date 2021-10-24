@@ -8,6 +8,8 @@ import {
     CreateRaffleActionHandler,
     DeleteRaffleActionData,
     DeleteRaffleActionHandler,
+    StartRaffleActionData,
+    StartRaffleActionHandler,
 } from "../handlers/actions";
 
 /**
@@ -29,6 +31,9 @@ export const handler = async (action: Action): Promise<HttpResponse> => {
             }
             case ActionType.COMMAND_ADD_TICKETS: {
                 return await AddTicketsActionHandler(action as Action<AddTicketsActionData>);
+            }
+            case ActionType.COMMAND_START: {
+                return await StartRaffleActionHandler(action as Action<StartRaffleActionData>);
             }
             default: {
                 await webhooks.editInitialResponse(action.context.applicationId, action.context.token, {

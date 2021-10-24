@@ -73,6 +73,7 @@ export class MontyStack extends cdk.Stack {
         this.workerLambda.addToRolePolicy(new iam.PolicyStatement({
             actions: [
                 'dynamodb:PutItem',
+                'dynamodb:GetItem',
                 'dynamodb:DeleteItem',
                 'dynamodb:UpdateItem',
                 'dynamodb:Query'
