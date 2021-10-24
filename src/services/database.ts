@@ -6,54 +6,69 @@ interface RaffleTableKey {
     Id: string;
 }
 
-interface RaffleCreateItem {
+interface RaffleData {
     CreatorId: string;
+    CreatedDate: number;
+    Tickets: {
+        [userId: string]: number;
+    };
     TicketPrice: number;
     Prize?: string;
+    StartDate?: number;
+    WinnerId?: string;
 }
-type RaffleCreateParams = RaffleTableKey & RaffleCreateItem;
 
-type RaffleItem = RaffleCreateParams & Omit<RaffleAddTicketsParams, 'UserId'>;
-interface RaffleAddTicketsItem {
-    UserId: string;
-    Tickets: number;
-}
-type RaffleAddTicketsParams = RaffleTableKey & RaffleAddTicketsItem;
+type RaffleItem = RaffleTableKey & RaffleData;
 
-interface RaffleUpdateWinnerItem {
-    Winner: string;
-}
-type RaffleUpdateWinnerParams = RaffleTableKey & RaffleUpdateWinnerItem;
+type CreateRaffleParams = RaffleTableKey & Pick<RaffleData, 'CreatorId' | 'TicketPrice' | 'Prize'>;
+
+type AddTicketsParams = RaffleTableKey & {UserId: string; Tickets: number};
+
+type UpdateWinnerParams = RaffleTableKey & Pick<RaffleData, 'WinnerId'>;
+
 
 const db = new DynamoDB.DocumentClient();
 
 export class Raffle {
     private static TableName = 'Raffles';
 
-    static async create(raffle: RaffleCreateParams): Promise<void> {
-        const params: DocumentClient.PutItemInput = {
+    /**
+     * Creates a new raffle
+     * @param params 
+     */
+    static async create(params: CreateRaffleParams): Promise<void> {
+        const putParams: DocumentClient.PutItemInput = {
             TableName: Raffle.TableName,
             Item: {
-                ...raffle,
+                ...params,
                 CreatedDate: new Date().valueOf(),
                 Tickets: { }
             }
         };
 
-        await db.put(params).promise();
+        await db.put(putParams).promise();
     }
 
-    static async delete(raffle: RaffleTableKey): Promise<void> {
-        const params: DocumentClient.DeleteItemInput = {
+    /**
+     * Deletes an existing raffle
+     * @param params 
+     */
+    static async delete(params: RaffleTableKey): Promise<void> {
+        const deleteParams: DocumentClient.DeleteItemInput = {
             TableName: Raffle.TableName,
-            Key: raffle
+            Key: params
         }
 
-        await db.delete(params).promise();
+        await db.delete(deleteParams).promise();
     }
 
-    static async addTickets(params: RaffleAddTicketsParams): Promise<number> {
-        const _params: DocumentClient.UpdateItemInput = {
+    /**
+     * Adds tickets to the specific user
+     * @param params 
+     * @returns The total amount of tickets that the user has (post update)
+     */
+    static async addTickets(params: AddTicketsParams): Promise<number> {
+        const updateParams: DocumentClient.UpdateItemInput = {
             TableName: Raffle.TableName,
             Key: {
                 GuildId: params.GuildId,
@@ -71,14 +86,14 @@ export class Raffle {
 
         try {
             return (await db.update({
-                ..._params,
+                ...updateParams,
                 UpdateExpression: 'set #t.#u = #t.#u + :v',
                 ConditionExpression: 'attribute_exists(#t.#u)'
             }).promise()).Attributes!.Tickets[params.UserId];
         } catch (error) {
             if ((error as AWSError).code === 'ConditionalCheckFailedException') {
                 return (await db.update({
-                    ..._params,
+                    ...updateParams,
                     UpdateExpression: 'set #t.#u = :v'
                 }).promise()).Attributes!.Tickets[params.UserId];
             }
@@ -87,6 +102,11 @@ export class Raffle {
         }
     }
 
+    /**
+     * Gets a list of raffles for a specific guild
+     * @param guildId 
+     * @returns List of raffle items
+     */
     static async getRaffles(guildId: RaffleTableKey['GuildId']): Promise<RaffleItem[]> {
         const params: DocumentClient.QueryInput = {
             TableName: Raffle.TableName,
@@ -102,31 +122,44 @@ export class Raffle {
         return (await db.query(params).promise()).Items as RaffleItem[];
     }
 
+    /**
+     * Gets a single raffle if it exists
+     * @param params 
+     * @returns Raffle item or undefined if raffle does not exist
+     */
     static async get(params: RaffleTableKey): Promise<RaffleItem | undefined> {
-        const _params: DocumentClient.GetItemInput = {
+        const getParams: DocumentClient.GetItemInput = {
             TableName: Raffle.TableName,
             Key: params
         }
 
-        return (await db.get(_params).promise()).Item as RaffleItem | undefined;
+        return (await db.get(getParams).promise()).Item as RaffleItem | undefined;
     }
 
-    static async updateWinner(params: RaffleUpdateWinnerParams): Promise<any> {
-        const _params: DocumentClient.UpdateItemInput = {
+    /**
+     * Updates the raffle with the winner
+     * @param params 
+     * @returns 
+     */
+    static async updateWinner(params: UpdateWinnerParams): Promise<any> {
+        const updateParams: DocumentClient.UpdateItemInput = {
             TableName: Raffle.TableName,
             Key: {
                 GuildId: params.GuildId,
                 Id: params.Id
             },
-            UpdateExpression: 'set #w = :id',
+            UpdateExpression: 'set #w = :id, #sd = :sdVal',
             ExpressionAttributeNames: {
-                '#w': 'Winner'
+                '#w': 'Winner',
+                '#sd': 'StartDate'
             },
             ExpressionAttributeValues: {
-                ':id': params.Winner
-            }
+                ':id': params.WinnerId,
+                ':sdVal': new Date().valueOf()
+            },
+            ReturnValues: 'NONE'
         }
 
-        return db.update(_params).promise();
+        return db.update(updateParams).promise();
     }
 }

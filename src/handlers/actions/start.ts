@@ -50,7 +50,7 @@ export const StartRaffleActionHandler: ActionHandler<StartRaffleActionData> = as
         await database.Raffle.updateWinner({
             GuildId: guildId,
             Id: id,
-            Winner: winnerId
+            WinnerId: winnerId
         })
 
         console.log('Creating follow up message');
