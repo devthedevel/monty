@@ -21,6 +21,7 @@ export const StartRaffleActionHandler: ActionHandler<StartRaffleActionData> = as
             Id: id
         });
 
+        // Return early if raffle doesn't exist
         if (!raffle) {
             console.log(`Could not find raffle with id '${id}'`);
             await webhooks.createFollowupMessage(applicationId, token, {
@@ -30,20 +31,29 @@ export const StartRaffleActionHandler: ActionHandler<StartRaffleActionData> = as
             return Response(200);
         }
 
+        const userTickets = Object.entries(raffle.Tickets);
+
+        // Return early if no one has bought tickets
+        if (userTickets.length === 0) {
+            console.log(`Raffle '${id}' has no ticket data`);
+            await webhooks.createFollowupMessage(applicationId, token, {
+                content: 'No tickets have been sold for this raffle',
+                flags: 1 << 6
+            });
+            return Response(200);
+        }
+
         const tickets: string[] = [];
 
-        // Push a user id x amount of times to an array
-        Object.keys(raffle.Tickets).forEach(userId => {
-            const numTickets = raffle.Tickets[userId];
+        // Add userId to tickets for each ticket they have
+        userTickets.forEach(ticket => {
+           const [userId, numTickets] = ticket;
             for (let i = 0; i < numTickets; i++) {
                 tickets.push(userId);
             }
         });
 
-        console.log(JSON.stringify(tickets));
-
-        const totalTicketSales = tickets.length * raffle.TicketPrice;
-
+        // Randomly select winner 
         const [winnerId, _] = randomElement(tickets);
         
         console.log(`User '${winnerId}' has won`);
@@ -52,6 +62,8 @@ export const StartRaffleActionHandler: ActionHandler<StartRaffleActionData> = as
             Id: id,
             WinnerId: winnerId
         })
+
+        const totalTicketSales = tickets.length * raffle.TicketPrice;
 
         console.log('Creating follow up message');
         await webhooks.createFollowupMessage(applicationId, token, {
