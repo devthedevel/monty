@@ -1,6 +1,5 @@
 import { AWSError, DynamoDB } from "aws-sdk";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
-import { Response } from "../utils/http";
 
 interface RaffleTableKey {
     GuildId: string;
@@ -8,6 +7,7 @@ interface RaffleTableKey {
 }
 
 interface RaffleCreateItem {
+    CreatorId: string;
     TicketPrice: number;
     Prize?: string;
 }
@@ -35,6 +35,7 @@ export class Raffle {
             TableName: Raffle.TableName,
             Item: {
                 ...raffle,
+                CreatedDate: new Date().valueOf(),
                 Tickets: { }
             }
         };

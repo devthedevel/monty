@@ -20,6 +20,7 @@ export interface ActionContext {
     applicationId: string;
     token: string;
     guildId: Snowflake;
+    userId: Snowflake;
 }
 
 export interface ActionData { }

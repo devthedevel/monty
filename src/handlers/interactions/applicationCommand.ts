@@ -38,7 +38,8 @@ async function handleChatInput(request: InteractionRequest): Promise<HttpRespons
         context: {
             applicationId: request.application_id,
             token: request.token,
-            guildId: request.guild_id!
+            guildId: request.guild_id!,
+            userId: request.member!.user!.id
         },
         data: args
     }

@@ -11,7 +11,7 @@ export interface CreateRaffleActionData extends ActionData {
 }
 
 export const CreateRaffleActionHandler: ActionHandler<CreateRaffleActionData> = async (action) => {
-    const { applicationId, token } = action.context;
+    const { applicationId, token, userId } = action.context;
 
     try {
         const id = randomUuid();
@@ -23,10 +23,11 @@ export const CreateRaffleActionHandler: ActionHandler<CreateRaffleActionData> = 
             Id: id,
             TicketPrice: action.data.ticket_price,
             Prize: action.data.prize,
-        })
+            CreatorId: userId
+        });
 
         console.log('Updating initial response');
-        await webhooks.editInitialResponse(applicationId, token, buildResponseMessage(id, action.data));
+        await webhooks.editInitialResponse(applicationId, token, buildResponseMessage(id, userId, action.data));
 
         return Response(200);
     } catch (error) {
@@ -40,7 +41,7 @@ export const CreateRaffleActionHandler: ActionHandler<CreateRaffleActionData> = 
     }
 }
 
-function buildResponseMessage(id: string, data: CreateRaffleActionData): InteractionCallbackData {
+function buildResponseMessage(id: string, userId: string, data: CreateRaffleActionData): InteractionCallbackData {
     const fields = [
         {
             name: 'ID',
@@ -65,7 +66,7 @@ function buildResponseMessage(id: string, data: CreateRaffleActionData): Interac
             {
                 color: 0xd733ff,
                 title: 'New Raffle',
-                description: `Hey folks! Theres a new raffle created! Ask a consul on how to buy tickets!`,
+                description: `Hey folks! <@${userId}> has created a new raffle! Ask a consul on how to buy tickets!`,
                 fields: fields
             }
         ]
