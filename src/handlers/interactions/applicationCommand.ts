@@ -12,7 +12,7 @@ import { Action, ActionData, ActionType } from "../../types/actions";
  */
 async function handleChatInput(request: InteractionRequest): Promise<HttpResponse> {
     if (DEBUG) {
-        console.log(`Chat request data: ${request.data}`);
+        console.log(`Chat request data: ${JSON.stringify(request.data)}`);
     }
 
     const command = request.data?.options?.[0].name;
